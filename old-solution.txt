@@ -1,3 +1,35 @@
+let sqrOfLength = Math.sqrt(boardArray.length);
+      let index = Number(position);
+      let rowIndex;
+      let columnIndex;
+      let result = {};
+
+      for (let i = 0; i < boardArray.length; i = i + sqrOfLength) {
+        if (index >= i && index < i + sqrOfLength) {
+          rowIndex = i / sqrOfLength;
+          columnIndex = index - i;
+        }
+      }
+
+      let rowArray = [];
+      for (
+        let i = rowIndex * sqrOfLength;
+        i < rowIndex * sqrOfLength + sqrOfLength;
+        i++
+      ) {
+        rowArray.push(i);
+      }
+
+      let columnArray = [];
+      for (let i = columnIndex; i < sqrOfLength ** 2; i = i + sqrOfLength) {
+        columnArray.push(i);
+      }
+
+      console.log(`row index: ${rowIndex}`);
+      console.log(`column index: ${columnIndex}`);
+      console.log(`column array: ${columnArray}`);
+      console.log(`row array: ${rowArray}`);
+
 if (rowArray[columnIndex - 2] || rowArray[columnIndex - 2] === 0) {
         if (
           boardArray[index].state ===

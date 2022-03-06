@@ -10,8 +10,48 @@
 </head>
 
 <body>
-  <div id="game-board" class="container"></div>
-  <button id="reset-btn">Reset</button>
+  <div class="header">
+    <div>Tic Tac Toe</div>
+  </div>
+  <div id="game-board" class="container grid-3x3"></div>
+  <div class="btn-container">
+    <button id="start-btn" class="btn">Start</button>
+    <button id="reset-btn" class="btn">Reset</button>
+  </div>
+
+  <div id="overlay" class="hide">
+    <div class="form-container">
+      <form action="" id="start-game-form">
+        <span id="close-form-btn" class="close-btn"><svg style="width:24px;height:24px" viewBox="0 0 24 24">
+            <path fill="currentColor"
+              d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+          </svg></span>
+        <header>Enter Players Informations</header>
+        <div class="input-group">
+          <label for="first-player-name">First Player Name*</label>
+          <input type="text" name="first-player-name" id="form-first-player-name" required>
+          <span class="validation-error-message"></span>
+        </div>
+        <div class="input-group">
+          <label for="first-player-symbol">First Player Symbol*</label>
+          <input type="text" name="first-player-symbol" id="form-first-player-symbol" required maxlength="1">
+        </div>
+        <div class="input-group">
+          <label for="second-player-name">Second Player Name*</label>
+          <input type="text" name="second-player-name" id="form-second-player-name" required>
+        </div>
+        <div class="input-group">
+          <label for="second-player-symbol">Second Player Symbol</label>
+          <input type="text" name="second-player-symbol" id="form-second-player-symbol" required maxlength="1">
+        </div>
+        <div class="form-btns-container">
+          <button id="form-submit-btn" class="btn" type="submit">Start!</button>
+          <button id="form-clear-btn" class="btn" type="reset">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
   <script src="./index.js"></script>
 </body>
 
