@@ -1,11 +1,14 @@
 // Player Factory
-const Player = (name, symbol) => {
+const Player = (name, symbol, playerNumber) => {
   return {
     get name() {
       return name;
     },
     get symbol() {
       return symbol;
+    },
+    get playerNumber() {
+      return playerNumber;
     },
   };
 };
@@ -56,8 +59,8 @@ const DisplayController = (() => {
           "#form-second-player-symbol"
         );
 
-        const player1 = Player(playerOneName.value, playerOneSymbol.value);
-        const player2 = Player(playerTwoName.value, playerTwoSymbol.value);
+        const player1 = Player(playerOneName.value, playerOneSymbol.value, 1);
+        const player2 = Player(playerTwoName.value, playerTwoSymbol.value, 2);
 
         Game.initGame(player1, player2);
         event.target.reset();
@@ -73,8 +76,8 @@ const DisplayController = (() => {
     return resetBtn;
   };
 
-  const renderBoxes = (boardArray) => {
-    for (let i = 0; i < boardArray.length; i++) {
+  const renderBoxes = (number) => {
+    for (let i = 0; i < number; i++) {
       const boxDiv = document.createElement("div");
       boxDiv.classList.add("box");
       boxDiv.dataset.position = i;
@@ -92,7 +95,31 @@ const DisplayController = (() => {
     gameBoardBoxesArray.length = 0;
   };
 
-  const displayWinner = (player) => {};
+  const displayWinner = (resultArray, firstPlayer, secondPlayer) => {
+    removeBoxes();
+    const winnerOverlay = document.querySelector("#winner-overlay");
+    winnerOverlay.classList.add("show");
+    let numberOfDraws = 0;
+    let numberOfPlayer1Wins = 0;
+    let numberOfPlayer2Wins = 0;
+    resultArray.forEach((result) => {
+      if (result === 1) {
+        numberOfPlayer1Wins++;
+      } else if (result === 2) {
+        numberOfPlayer2Wins++;
+      } else {
+        numberOfDraws++;
+      }
+    });
+
+    if (numberOfDraws == 3 || numberOfPlayer1Wins === numberOfPlayer2Wins) {
+      winnerOverlay.textContent = `It is a draw!`;
+    } else if (numberOfPlayer1Wins > numberOfPlayer2Wins) {
+      winnerOverlay.textContent = `Winner is ${firstPlayer.name}`;
+    } else if (numberOfPlayer1Wins < numberOfPlayer2Wins) {
+      winnerOverlay.textContent = `Winner is ${secondPlayer.name}`;
+    }
+  };
 
   const changeBoxContent = (boxNumber, content) => {
     gameBoardBoxesArray[boxNumber].textContent = content;
@@ -100,6 +127,13 @@ const DisplayController = (() => {
 
   const changeBoxColor = (boxNumber, color) => {
     gameBoardBoxesArray[boxNumber].style["background-color"] = color;
+  };
+
+  const resetBoxesContent = () => {
+    for (const box of gameBoardBoxesArray) {
+      box.textContent = "";
+      box.style["background-color"] = "";
+    }
   };
 
   return {
@@ -110,6 +144,8 @@ const DisplayController = (() => {
     renderBoxes,
     removeBoxes,
     changeBoxContent,
+    resetBoxesContent,
+    displayWinner,
   };
 })();
 
@@ -168,17 +204,14 @@ const Game = ((displayController, gameBoard) => {
   let boardArray;
   let isFirstPlayerTurn;
   let isGameEnded;
+  let resultArray = Array(3).fill("", 0);
   let player1;
   let player2;
+  let gameNumber = 0;
 
   const restartGame = () => {
-    if (gameBoard.length === 0) {
-      boardArray = gameBoard.resetGameboard();
-    } else {
-      boardArray = gameBoard.populateGameboardArray();
-    }
-    displayController.removeBoxes();
-    displayController.renderBoxes(boardArray);
+    boardArray = gameBoard.resetGameboard();
+    displayController.resetBoxesContent();
     isFirstPlayerTurn = true;
     isGameEnded = false;
   };
@@ -197,20 +230,32 @@ const Game = ((displayController, gameBoard) => {
 
     if (msg === true) {
       isFirstPlayerTurn = !isFirstPlayerTurn;
+    } else {
+      console.log(msg);
     }
   };
 
   const initGame = (_player1, _player2) => {
-    restartGame();
     const gameBoardContainer = displayController.gameBoardContainer;
     gameBoardContainer.removeEventListener("click", gameBoardClickHandler);
     const resetBtn = displayController.getResetBtn();
+    const winnerOverlay = document.querySelector("#winner-overlay");
+    winnerOverlay.classList.remove("show");
+    winnerOverlay.classList.add("hide");
 
-    resetBtn.addEventListener("click", restartGame);
-
-    gameBoardContainer.addEventListener("click", gameBoardClickHandler);
     player1 = _player1;
     player2 = _player2;
+    gameNumber = 0;
+    resultArray.fill("", 0);
+    isFirstPlayerTurn = true;
+    isGameEnded = false;
+    boardArray = gameBoard.populateGameboardArray();
+
+    displayController.removeBoxes();
+    displayController.renderBoxes(boardArray.length);
+
+    resetBtn.addEventListener("click", restartGame);
+    gameBoardContainer.addEventListener("click", gameBoardClickHandler);
   };
 
   const playTurn = (player, gameboardPosition) => {
@@ -232,6 +277,18 @@ const Game = ((displayController, gameBoard) => {
         displayController.changeBoxColor(coordinate, "green");
       }
       isGameEnded = true;
+      resultArray[gameNumber++] = player.playerNumber;
+    } else {
+      const isDraw = boardArray.every((boardBox) => {
+        return boardBox.state != "";
+      });
+      if (isDraw) {
+        resultArray[gameNumber++] = "draw";
+      }
+    }
+
+    if (gameNumber >= 3) {
+      displayController.displayWinner(resultArray, player1, player2);
     }
     return true;
   };

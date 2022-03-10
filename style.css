@@ -15,6 +15,7 @@ body {
 }
 
 .hide {
+  position: absolute;
   opacity: 0;
   height: 0;
   overflow: hidden;
@@ -23,14 +24,13 @@ body {
 .show {
   opacity: 1;
   height: auto;
-  position: fixed; /* Sit on top of the page content */
+  position: absolute;
   width: 100%; /* Full width (cover the whole page) */
   height: 100%; /* Full height (cover the whole page) */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
   z-index: 2;
 }
 
@@ -51,6 +51,7 @@ body {
 .grid-3x3 {
   grid-template-columns: repeat(3, minmax(100px, 150px));
   grid-template-rows: repeat(3, minmax(100px, 150px));
+  position: relative;
 }
 
 .box {
@@ -74,11 +75,19 @@ body {
   font-size: 1rem;
   background-color: #98b4aa;
   color: #212a44;
+  cursor: pointer;
 }
 
 #overlay {
   display: block;
   transition: opacity 0.3s ease-in-out;
+  background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+}
+
+#winner-overlay {
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
 }
 
 .form-container {
