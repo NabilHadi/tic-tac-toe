@@ -1,3 +1,43 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   background-color: aqua;
+  min-height: 100vh;
+  text-align: center;
+}
+
+#gameboard-container {
+  display: grid;
+  width: 500px;
+  height: 500px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  border: 3px solid salmon;
+  margin: auto;
+}
+
+.tile {
+  border: 1px solid salmon;
+  font-size: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tile.winning {
+  background-color: green;
+}
+
+.tile.hovering {
+  background-color: rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.tile.hovering::after {
+  content: attr(data-content);
+  color: rgba(0, 0, 0, 0.3);
 }
