@@ -182,7 +182,6 @@ const Game = (function () {
 
   // Initialize Game
   const initGame = (p1, p2) => {
-    console.log({ p1, p2 });
     player1 = p1;
     player2 = p2;
     currPlayerTurn = p1;
@@ -231,7 +230,6 @@ const Game = (function () {
     const winner = checkForWinner(index);
     if (!winner) {
       if (isDraw()) {
-        console.log("draw");
         DisplayController.unbindClickHandler();
       } else {
         nextPlayerTurn();
