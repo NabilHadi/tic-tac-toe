@@ -37,16 +37,57 @@ const playerFactory = (name, sign) => {
 
 // Display Controller Module
 const DisplayController = (function () {
+  // Needed for not allowing to close form modal on page load
+  let isFirstGame = true;
   // DOM Cacheing
   const gameboardTiles = [];
   const gameboardContainer = document.querySelector("#gameboard-container");
   const resetButton = document.querySelector("#reset-button");
+  const newGameButton = document.querySelector("#new-game-button");
+  const modal = document.querySelector(".modal");
 
   //Reset Button Click Handler
   resetButton.addEventListener("click", () => {
     resetGameboard();
     Game.nextPlayerTurn();
   });
+
+  newGameButton.addEventListener("click", startNewGame);
+  window.addEventListener("load", startNewGame);
+
+  function startNewGame() {
+    modal.style.display = "block";
+    const form = modal.querySelector("#new-game-form");
+
+    form.addEventListener("submit", formSubmitHandler);
+
+    function formSubmitHandler(e) {
+      e.preventDefault();
+      const p1Name = form.querySelector("#player1-name-input").value;
+      const p1Sign = form.querySelector("#player1-sign-input").value;
+      const p2Name = form.querySelector("#player2-name-input").value;
+      const p2Sign = form.querySelector("#player2-sign-input").value;
+
+      const player1 = playerFactory(p1Name, p1Sign);
+      const player2 = playerFactory(p2Name, p2Sign);
+
+      Game.initGame(player1, player2);
+
+      form.removeEventListener("submit", formSubmitHandler);
+      form.reset();
+      modal.style.display = "none";
+      isFirstGame = false;
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.addEventListener("click", function modalClickHandler(event) {
+      if (event.target == modal && !isFirstGame) {
+        form.removeEventListener("submit", formSubmitHandler);
+        modal.style.display = "none";
+        window.removeEventListener("click", modalClickHandler);
+      }
+    });
+  }
 
   // Binding Events
   function bindClickHandler() {
@@ -111,6 +152,7 @@ const DisplayController = (function () {
   }
 
   function renderGameboard() {
+    gameboardTiles.forEach((tile) => tile.remove());
     Gameboard.getGameboardValues().map((v, i) => {
       const tile = document.createElement("div");
       tile.textContent = v;
@@ -140,9 +182,11 @@ const Game = (function () {
 
   // Initialize Game
   const initGame = (p1, p2) => {
+    console.log({ p1, p2 });
     player1 = p1;
     player2 = p2;
     currPlayerTurn = p1;
+    DisplayController.unbindClickHandler();
     Gameboard.resetGameboard();
     DisplayController.renderGameboard();
     DisplayController.bindClickHandler();

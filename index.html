@@ -13,6 +13,29 @@
   <h1>Tic Tac Toe</h1>
   <div id="gameboard-container"></div>
   <button id="reset-button" type="button">Reset</button>
+  <button id="new-game-button" type="button">New Game</button>
+  <div class="modal">
+    <form id="new-game-form" class="modal-content">
+      <div class="input-group">
+        <label for="player1-name-input">First Player Name</label>
+        <input required type="text" id="player1-name-input" placeholder="John">
+      </div>
+      <div class="input-group">
+        <label for="player1-sign-input">First Player Sign</label>
+        <input required type="text" id="player1-sign-input" placeholder="x" minlength="1" maxlength="1">
+      </div>
+      <div class="input-group">
+        <label for="player2-name-input">Second Player Name</label>
+        <input required type="text" id="player2-name-input" placeholder="Doe">
+      </div>
+      <div class="input-group">
+        <label for="player2-sign-input">Second Player Sign</label>
+        <input required type="text" id="player2-sign-input" placeholder="o" minlength="1" maxlength="1">
+      </div>
+      <button type="submit">Start</button>
+      <button type="reset">Clear</button>
+    </form>
+  </div>
   <script src="./index.js"></script>
 </body>
 
