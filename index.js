@@ -1,4 +1,6 @@
+// Gameborad Module
 const Gameboard = (function () {
+  // gameboard = [undefined, undefined, ...] length= 9
   let gameboard = Array.from(Array(9));
 
   const resetGameboard = () => {
@@ -25,6 +27,7 @@ const Gameboard = (function () {
   };
 })();
 
+// Player Factory Function
 const playerFactory = (name, sign) => {
   return {
     name,
@@ -32,16 +35,20 @@ const playerFactory = (name, sign) => {
   };
 };
 
+// Display Controller Module
 const DisplayController = (function () {
+  // DOM Cacheing
   const gameboardTiles = [];
   const gameboardContainer = document.querySelector("#gameboard-container");
   const resetButton = document.querySelector("#reset-button");
 
+  //Reset Button Click Handler
   resetButton.addEventListener("click", () => {
     resetGameboard();
     Game.nextPlayerTurn();
   });
 
+  // Binding Events
   function bindClickHandler() {
     gameboardContainer.addEventListener("click", clickHandler);
     gameboardTiles.forEach((tile) => {
@@ -50,6 +57,7 @@ const DisplayController = (function () {
     });
   }
 
+  // Unbinding Events
   function unbindClickHandler() {
     gameboardContainer.removeEventListener("click", clickHandler);
     gameboardTiles.forEach((tile) => {
@@ -58,6 +66,7 @@ const DisplayController = (function () {
     });
   }
 
+  // Event Handlers
   function clickHandler(e) {
     const index = e.target.dataset.index;
     if (index === undefined) return;
@@ -85,6 +94,7 @@ const DisplayController = (function () {
     e.target.setAttribute("data-content", "");
   }
 
+  // DOM manipulation Functions
   function showWinningTiles(winingTilesIndecies) {
     winingTilesIndecies.forEach((i) => {
       gameboardTiles[i].classList.add("winning");
@@ -111,6 +121,7 @@ const DisplayController = (function () {
     });
   }
 
+  // Exporting Functions
   return {
     bindClickHandler,
     unbindClickHandler,
@@ -121,26 +132,20 @@ const DisplayController = (function () {
   };
 })();
 
+// Game Module
 const Game = (function () {
   let player1;
   let player2;
   let currPlayerTurn;
 
-  const setPlayers = (p1, p2) => {
+  // Initialize Game
+  const initGame = (p1, p2) => {
     player1 = p1;
     player2 = p2;
     currPlayerTurn = p1;
     Gameboard.resetGameboard();
     DisplayController.renderGameboard();
     DisplayController.bindClickHandler();
-  };
-
-  const nextPlayerTurn = () => {
-    if (currPlayerTurn === player1) {
-      currPlayerTurn = player2;
-    } else {
-      currPlayerTurn = player1;
-    }
   };
 
   let winingCombinations = [
@@ -201,8 +206,16 @@ const Game = (function () {
     return currPlayerTurn;
   }
 
+  function nextPlayerTurn() {
+    if (currPlayerTurn === player1) {
+      currPlayerTurn = player2;
+    } else {
+      currPlayerTurn = player1;
+    }
+  }
+
   return {
-    setPlayers,
+    initGame,
     playAt,
     isPlayedAt,
     nextPlayerTurn,
@@ -210,4 +223,4 @@ const Game = (function () {
   };
 })();
 
-Game.setPlayers(playerFactory("John", "X"), playerFactory("Doe", "O"));
+Game.initGame(playerFactory("John", "X"), playerFactory("Doe", "O"));
