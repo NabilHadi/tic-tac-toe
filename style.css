@@ -27,3 +27,7 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+.tile.winning-tile {
+  background-color: aqua;
+}

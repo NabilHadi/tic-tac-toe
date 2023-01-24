@@ -90,7 +90,31 @@ const Gameboard = (() => {
   const getGameboardArray = () => [...gameBoardArray];
 
   const getWinner = () => {
-    return "Winner";
+    const winningCombinations = [
+      [0, 1, 2],
+      [0, 4, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [2, 4, 6],
+      [3, 4, 5],
+      [6, 7, 8],
+    ];
+
+    const winningArray = winningCombinations.find((comb) => {
+      if (comb.some((elm) => gameBoardArray[elm] === 0)) return;
+      return (
+        gameBoardArray[comb[0]] === gameBoardArray[comb[1]] &&
+        gameBoardArray[comb[0]] === gameBoardArray[comb[2]]
+      );
+    });
+
+    if (winningArray) {
+      return {
+        winnerNumber: gameBoardArray[winningArray[0]],
+        winningArray: winningArray,
+      };
+    }
   };
 
   const isDraw = () => {
@@ -121,6 +145,13 @@ const playerFactory = (id, name, number) => {
 
 const DisplayController = ((doc) => {
   const gameboardContainer = doc.querySelector(".gameboard-container");
+  const tiles = [];
+
+  const getTileByIndex = (index) => {
+    return tiles.find((t) => {
+      return t.dataset.index == index;
+    });
+  };
 
   const handleTileClick = (event) => {
     const index = event.target.dataset.index;
@@ -129,16 +160,32 @@ const DisplayController = ((doc) => {
   };
 
   const handleTilePlay = (payload) => {
-    const tile = gameboardContainer.querySelector(
-      `[data-index="${payload.index}"]`
-    );
+    const tile = getTileByIndex(payload.index);
     if (!tile) return;
-    console.log(tile);
 
     tile.textContent = payload.sign;
   };
 
   PubSub.subscribe("tilePlayed", handleTilePlay);
+
+  const disableTilesClickListener = () => {
+    tiles.forEach((t) => {
+      t.removeEventListener("click", handleTileClick);
+    });
+  };
+
+  const handlePlayerWin = ({ player, indecies }) => {
+    if (!indecies) return;
+
+    indecies.forEach((i) => {
+      const tile = getTileByIndex(i);
+      tile.classList.add("winning-tile");
+    });
+
+    disableTilesClickListener();
+  };
+
+  PubSub.subscribe("playerWon", handlePlayerWin);
 
   const renderGameboard = (gameboard = []) => {
     gameboardContainer.innerHTML = "";
@@ -149,6 +196,7 @@ const DisplayController = ((doc) => {
         eventHandlers: { click: handleTileClick },
       });
       gameboardContainer.appendChild(tile);
+      tiles.push(tile);
     });
   };
 
@@ -172,8 +220,15 @@ const GameCoordinator = ((Gameboard, DisplayController) => {
       sign: currentPlayer === 1 ? "X" : "O",
     });
     currentPlayer = currentPlayer === 1 ? 2 : 1;
+
+    const winner = Gameboard.getWinner();
+    if (winner) {
+      PubSub.publish("playerWon", {
+        player: winner.winnerNumber,
+        indecies: winner.winningArray,
+      });
+    }
     // TODO
-    Gameboard.getWinner();
     Gameboard.isDraw();
   };
   PubSub.subscribe("tileClicked", handleTileClickEvent);
