@@ -67,9 +67,6 @@ const PubSub = (() => {
 })();
 
 const Gameboard = (() => {
-  let playerOneNumber = 1;
-  let playerTwoNumber = 2;
-
   const gameBoardArray = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   const canPlayAt = (index) => {
@@ -122,8 +119,6 @@ const Gameboard = (() => {
   };
 
   return {
-    playerOneNumber,
-    playerTwoNumber,
     canPlayAt,
     playAt,
     resetGameBoardArray,
@@ -140,6 +135,7 @@ const playerFactory = (id, name, number) => {
     },
     name,
     number,
+    score: 0,
   };
 };
 
@@ -147,6 +143,16 @@ const DisplayController = ((doc) => {
   const gameboardContainer = doc.querySelector(".gameboard-container");
   const tiles = [];
   const restartBtn = doc.querySelector("#restart-game-btn");
+
+  const playerOneInfo = {
+    nameElm: doc.querySelector(".player-one-name"),
+    scoreElm: doc.querySelector(".player-one-score"),
+  };
+
+  const playerTwoInfo = {
+    nameElm: doc.querySelector(".player-two-name"),
+    scoreElm: doc.querySelector(".player-two-score"),
+  };
 
   const clearTiles = () => {
     tiles.forEach((t) => {
@@ -196,7 +202,7 @@ const DisplayController = ((doc) => {
 
   const handleNewGameEvent = () => {};
 
-  const handlePlayerWin = ({ player, indecies }) => {
+  const handlePlayerWin = ({ indecies }) => {
     if (!indecies) return;
 
     indecies.forEach((i) => {
@@ -227,38 +233,56 @@ const DisplayController = ((doc) => {
     enableTilesClickListener();
   }
 
+  function setPlayersNames(p1Name, p2Name) {
+    playerOneInfo.nameElm.textContent = p1Name;
+    playerTwoInfo.nameElm.textContent = p2Name;
+  }
+
+  function setPlayersScores(p1Score, p2Score) {
+    playerOneInfo.scoreElm.textContent = p1Score;
+    playerTwoInfo.scoreElm.textContent = p2Score;
+  }
+
   return {
     renderGameboard,
     resetGameboard,
+    setPlayersScores,
+    setPlayersNames,
   };
 })(document);
 
 const GameCoordinator = ((Gameboard, DisplayController) => {
-  let currentPlayer = 1;
+  const playerOne = playerFactory(1, "Joe", 1);
+  const playerTwo = playerFactory(2, "Smith", 2);
+  let currentPlayer = playerOne;
+
+  DisplayController.setPlayersNames(playerOne.name, playerTwo.name);
+  DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
 
   const handleTileClickEvent = (payload = {}) => {
     if (!payload.index) return;
     let index = Number(payload.index);
 
     if (!Gameboard.canPlayAt(index)) return;
-    Gameboard.playAt(index, currentPlayer);
+    Gameboard.playAt(index, currentPlayer.number);
 
     PubSub.publish("tilePlayed", {
       index,
-      sign: currentPlayer === 1 ? "X" : "O",
+      sign: currentPlayer === playerOne ? "X" : "O",
     });
 
     const winner = Gameboard.getWinner();
     if (winner) {
       PubSub.publish("playerWon", {
-        player: winner.winnerNumber,
         indecies: winner.winningArray,
       });
+      currentPlayer.score++;
+      DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
     }
+    currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
 
     // TODO
     Gameboard.isDraw();
-    currentPlayer = currentPlayer === 1 ? 2 : 1;
   };
   PubSub.subscribe("tileClicked", handleTileClickEvent);
 
