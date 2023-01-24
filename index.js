@@ -146,6 +146,14 @@ const playerFactory = (id, name, number) => {
 const DisplayController = ((doc) => {
   const gameboardContainer = doc.querySelector(".gameboard-container");
   const tiles = [];
+  const restartBtn = doc.querySelector("#restart-game-btn");
+
+  const clearTiles = () => {
+    tiles.forEach((t) => {
+      t.textContent = "";
+      t.classList.remove("winning-tile");
+    });
+  };
 
   const getTileByIndex = (index) => {
     return tiles.find((t) => {
@@ -174,6 +182,20 @@ const DisplayController = ((doc) => {
     });
   };
 
+  const enableTilesClickListener = () => {
+    tiles.forEach((t) => {
+      t.addEventListener("click", handleTileClick);
+    });
+  };
+
+  const handleRestartBtnClick = (event) => {
+    PubSub.publish("restartGameRequest");
+  };
+
+  restartBtn.addEventListener("click", handleRestartBtnClick);
+
+  const handleNewGameEvent = () => {};
+
   const handlePlayerWin = ({ player, indecies }) => {
     if (!indecies) return;
 
@@ -200,8 +222,14 @@ const DisplayController = ((doc) => {
     });
   };
 
+  function resetGameboard() {
+    clearTiles();
+    enableTilesClickListener();
+  }
+
   return {
     renderGameboard,
+    resetGameboard,
   };
 })(document);
 
@@ -219,7 +247,6 @@ const GameCoordinator = ((Gameboard, DisplayController) => {
       index,
       sign: currentPlayer === 1 ? "X" : "O",
     });
-    currentPlayer = currentPlayer === 1 ? 2 : 1;
 
     const winner = Gameboard.getWinner();
     if (winner) {
@@ -228,10 +255,19 @@ const GameCoordinator = ((Gameboard, DisplayController) => {
         indecies: winner.winningArray,
       });
     }
+
     // TODO
     Gameboard.isDraw();
+    currentPlayer = currentPlayer === 1 ? 2 : 1;
   };
   PubSub.subscribe("tileClicked", handleTileClickEvent);
+
+  const handleGameRestartRequest = () => {
+    DisplayController.resetGameboard();
+    Gameboard.resetGameBoardArray();
+  };
+
+  PubSub.subscribe("restartGameRequest", handleGameRestartRequest);
 })(Gameboard, DisplayController);
 
 DisplayController.renderGameboard(Gameboard.getGameboardArray());
