@@ -9,3 +9,17 @@ body {
   min-height: 100vh;
   text-align: center;
 }
+
+.gameboard-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  height: 400px;
+  width: 400px;
+  margin: auto;
+  border: 1px solid black;
+}
+
+.gameboard-container .tile {
+  border: 1px solid black;
+}
