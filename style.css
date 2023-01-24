@@ -22,4 +22,8 @@ body {
 
 .gameboard-container .tile {
   border: 1px solid black;
+  font-size: 500%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
