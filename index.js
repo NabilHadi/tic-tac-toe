@@ -102,35 +102,6 @@ const modal = (function () {
   return { setContent, showModal, hideModal, getView, setCloseable };
 })();
 
-const PubSub = (() => {
-  const events = [];
-  return {
-    subscribe(eventName, func) {
-      if (events[eventName]) {
-        events[eventName].push(func);
-        console.log(`${func.name} has subscribed to ${eventName} Topic!`);
-      } else {
-        events[eventName] = [func];
-        console.log(`${func.name} has subscribed to ${eventName} Topic!`);
-      }
-    },
-    unsubscribe(eventName, func) {
-      if (events[eventName]) {
-        events[eventName] = events[eventName].filter((fn) => fn !== func);
-        console.log(`${func.name} has unsubscribed from ${eventName} Topic!`);
-      }
-    },
-    publish(eventName, ...args) {
-      const funcs = events[eventName];
-      if (Array.isArray(funcs)) {
-        funcs.forEach((func) => {
-          func.apply(null, args);
-        });
-      }
-    },
-  };
-})();
-
 const Gameboard = (() => {
   const gameBoardArray = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -193,20 +164,19 @@ const Gameboard = (() => {
   };
 })();
 
-const playerFactory = (id, name, number) => {
+const playerFactory = (id, name, number, sign) => {
   return {
     getId() {
       return id;
     },
     name,
     number,
+    sign,
     score: 0,
   };
 };
 
 const DisplayController = (() => {
-  let doc;
-  let modal;
   let gameboardContainer;
   let tiles;
   let restartBtn;
@@ -228,11 +198,11 @@ const DisplayController = (() => {
     const playerOneName = formData.get("p1_name");
     const playerTwoName = formData.get("p2_name");
 
-    const playerOne = playerFactory(1, playerOneName, 1);
-    const playerTwo = playerFactory(2, playerTwoName, 2);
+    const playerOne = playerFactory(1, playerOneName, 1, "X");
+    const playerTwo = playerFactory(2, playerTwoName, 2, "O");
 
     resetGameboard();
-    PubSub.publish("newGame", { playerOne, playerTwo });
+    GameCoordinator.startNewGame(playerOne, playerTwo);
     modal.hideModal();
   }
 
@@ -252,14 +222,14 @@ const DisplayController = (() => {
   const handleTileClick = (event) => {
     const index = event.target.dataset.index;
     if (!index) return;
-    PubSub.publish("tileClicked", { index });
+    GameCoordinator.playAt(index);
   };
 
-  const handleTilePlay = (payload) => {
-    const tile = getTileByIndex(payload.index);
+  const setTileContent = (index, content) => {
+    const tile = getTileByIndex(index);
     if (!tile) return;
 
-    tile.textContent = payload.sign;
+    tile.textContent = content;
   };
 
   const disableTilesClickListener = () => {
@@ -275,13 +245,13 @@ const DisplayController = (() => {
   };
 
   const handleRestartBtnClick = (event) => {
-    PubSub.publish("restartGameRequest");
+    GameCoordinator.restartGame();
   };
 
-  const handlePlayerWin = ({ indecies }) => {
-    if (!indecies) return;
+  const handlePlayerWin = (tileIndecies) => {
+    if (!tileIndecies) return;
 
-    indecies.forEach((i) => {
+    tileIndecies.forEach((i) => {
       const tile = getTileByIndex(i);
       tile.classList.add("winning-tile");
     });
@@ -328,86 +298,81 @@ const DisplayController = (() => {
     modal.setCloseable(false);
   }
 
-  function init(document, _modal) {
-    doc = document;
-    modal = _modal;
-    gameboardContainer = doc.querySelector(".gameboard-container");
+  function init() {
+    gameboardContainer = document.querySelector(".gameboard-container");
     tiles = [];
-    restartBtn = doc.querySelector("#restart-game-btn");
-    newGameBtn = doc.querySelector("#new-game-btn");
-    newGameForm = doc.querySelector("#new_game_form");
+    restartBtn = document.querySelector("#restart-game-btn");
+    newGameBtn = document.querySelector("#new-game-btn");
+    newGameForm = document.querySelector("#new_game_form");
 
     playerOneInfo = {
-      nameElm: doc.querySelector(".player-one-name"),
-      scoreElm: doc.querySelector(".player-one-score"),
+      nameElm: document.querySelector(".player-one-name"),
+      scoreElm: document.querySelector(".player-one-score"),
     };
 
     playerTwoInfo = {
-      nameElm: doc.querySelector(".player-two-name"),
-      scoreElm: doc.querySelector(".player-two-score"),
+      nameElm: document.querySelector(".player-two-name"),
+      scoreElm: document.querySelector(".player-two-score"),
     };
 
     modal.setContent([newGameForm]);
-    doc.body.appendChild(modal.getView());
+    document.body.appendChild(modal.getView());
 
     newGameBtn.addEventListener("click", handleNewGameBtnClick);
-    newGameForm.addEventListener("submit", handleNewGamFormSubmit);
-    PubSub.subscribe("tilePlayed", handleTilePlay);
     restartBtn.addEventListener("click", handleRestartBtnClick);
-    PubSub.subscribe("playerWon", handlePlayerWin);
+    newGameForm.addEventListener("submit", handleNewGamFormSubmit);
   }
 
   return {
     init,
+    setTileContent,
+    handlePlayerWin,
     renderGameboard,
     resetGameboard,
     setPlayersScores,
     setPlayersNames,
     displayForm,
   };
-})(document, modal);
+})();
 
 const GameCoordinator = (() => {
-  let Gameboard;
-  let DisplayController;
   let playerOne = null;
   let playerTwo = null;
   let currentPlayer = playerOne;
 
-  const handleTileClickEvent = (payload = {}) => {
-    if (!payload.index) return;
-    let index = Number(payload.index);
+  const playAt = (index) => {
+    index = Number(index);
 
     if (!Gameboard.canPlayAt(index)) return;
     Gameboard.playAt(index, currentPlayer.number);
 
-    PubSub.publish("tilePlayed", {
-      index,
-      sign: currentPlayer === playerOne ? "X" : "O",
-    });
+    DisplayController.setTileContent(index, currentPlayer.sign);
 
-    const winner = Gameboard.getWinner();
-    if (winner) {
-      PubSub.publish("playerWon", {
-        indecies: winner.winningArray,
-      });
-      currentPlayer.score++;
-      DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
+    if (!checkForWinner()) {
+      // TODO
+      console.log(Gameboard.isDraw());
     }
     currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
-
-    // TODO
-    console.log(Gameboard.isDraw());
   };
 
-  const handleGameRestartRequest = () => {
+  function checkForWinner() {
+    const winner = Gameboard.getWinner();
+    if (winner) {
+      DisplayController.handlePlayerWin(winner.winningArray);
+      currentPlayer.score++;
+      DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
+      return true;
+    }
+  }
+
+  const restartGame = () => {
     DisplayController.resetGameboard();
     Gameboard.resetGameBoardArray();
   };
 
-  const handleNewGame = (payload) => {
-    playerOne = payload.playerOne;
-    playerTwo = payload.playerTwo;
+  const startNewGame = (player1, player2) => {
+    playerOne = player1;
+    playerTwo = player2;
     currentPlayer = playerOne;
     Gameboard.resetGameBoardArray();
     DisplayController.setPlayersNames(playerOne.name, playerTwo.name);
@@ -415,19 +380,12 @@ const GameCoordinator = (() => {
     DisplayController.renderGameboard(Gameboard.getGameboardArray());
   };
 
-  function init(_Gameboard, _DisplayController) {
-    Gameboard = _Gameboard;
-    DisplayController = _DisplayController;
-    PubSub.subscribe("tileClicked", handleTileClickEvent);
-    PubSub.subscribe("newGame", handleNewGame);
-    PubSub.subscribe("restartGameRequest", handleGameRestartRequest);
-  }
-
   return {
-    init,
+    playAt,
+    startNewGame,
+    restartGame,
   };
 })();
 
-DisplayController.init(document, modal);
-GameCoordinator.init(Gameboard, DisplayController);
+DisplayController.init();
 DisplayController.displayForm();
