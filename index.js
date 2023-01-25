@@ -178,6 +178,7 @@ const playerFactory = (id, name, number, sign) => {
 
 const DisplayController = (() => {
   let gameboardContainer;
+  let overlay;
   let tiles;
   let restartBtn;
   let newGameBtn;
@@ -265,6 +266,7 @@ const DisplayController = (() => {
     tiles.forEach((t) => t.remove());
     tiles = [];
     gameboardContainer.innerHTML = "";
+    gameboardContainer.appendChild(overlay);
 
     // Set State
     gameboard.forEach((item, index) => {
@@ -298,8 +300,16 @@ const DisplayController = (() => {
     modal.setCloseable(false);
   }
 
+  function displayOverlay() {
+    overlay.classList.remove("hide");
+    setTimeout(() => {
+      overlay.classList.add("hide");
+    }, 1000);
+  }
+
   function init() {
     gameboardContainer = document.querySelector(".gameboard-container");
+    overlay = document.querySelector(".overlay");
     tiles = [];
     restartBtn = document.querySelector("#restart-game-btn");
     newGameBtn = document.querySelector("#new-game-btn");
@@ -332,6 +342,7 @@ const DisplayController = (() => {
     setPlayersScores,
     setPlayersNames,
     displayForm,
+    displayOverlay,
   };
 })();
 
@@ -349,8 +360,11 @@ const GameCoordinator = (() => {
     DisplayController.setTileContent(index, currentPlayer.sign);
 
     if (!checkForWinner()) {
-      // TODO
-      console.log(Gameboard.isDraw());
+      if (Gameboard.isDraw()) {
+        DisplayController.displayOverlay();
+        restartGame();
+      }
+    } else {
     }
     currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
   };
