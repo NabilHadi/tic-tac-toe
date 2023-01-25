@@ -245,7 +245,7 @@ const DisplayController = (() => {
     });
   };
 
-  const handleRestartBtnClick = (event) => {
+  const handleRestartBtnClick = () => {
     GameCoordinator.restartGame();
   };
 
@@ -300,11 +300,21 @@ const DisplayController = (() => {
     modal.setCloseable(false);
   }
 
-  function displayOverlay() {
+  function displayOverlay(content) {
+    overlay.textContent = content;
     overlay.classList.remove("hide");
-    setTimeout(() => {
-      overlay.classList.add("hide");
-    }, 1000);
+  }
+
+  function hideOverlay() {
+    overlay.classList.add("hide");
+  }
+
+  function enableRestartGameBtn() {
+    restartBtn.disabled = false;
+  }
+
+  function disableRestartGameBtn() {
+    restartBtn.disabled = true;
   }
 
   function init() {
@@ -343,6 +353,9 @@ const DisplayController = (() => {
     setPlayersNames,
     displayForm,
     displayOverlay,
+    hideOverlay,
+    enableRestartGameBtn,
+    disableRestartGameBtn,
   };
 })();
 
@@ -361,10 +374,22 @@ const GameCoordinator = (() => {
 
     if (!checkForWinner()) {
       if (Gameboard.isDraw()) {
-        DisplayController.displayOverlay();
-        restartGame();
+        DisplayController.displayOverlay("DRAW!");
+        setTimeout(() => {
+          restartGame();
+          DisplayController.hideOverlay();
+        }, 1000);
       }
     } else {
+      DisplayController.displayOverlay(`${currentPlayer.name} Won!!!`);
+      if (currentPlayer.score < 3) {
+        setTimeout(() => {
+          restartGame();
+          DisplayController.hideOverlay();
+        }, 1000);
+      } else {
+        DisplayController.disableRestartGameBtn();
+      }
     }
     currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
   };
@@ -389,6 +414,8 @@ const GameCoordinator = (() => {
     playerTwo = player2;
     currentPlayer = playerOne;
     Gameboard.resetGameBoardArray();
+    DisplayController.hideOverlay();
+    DisplayController.enableRestartGameBtn();
     DisplayController.setPlayersNames(playerOne.name, playerTwo.name);
     DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
     DisplayController.renderGameboard(Gameboard.getGameboardArray());
