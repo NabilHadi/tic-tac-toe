@@ -37,6 +37,71 @@ function createElement({
   return elm;
 }
 
+const modal = (function () {
+  let closeable = true;
+  const view = createElement({
+    tag: "div",
+    classNames: ["modal"],
+    attributes: { id: "modal" },
+  });
+
+  const modalContent = createElement({
+    tag: "div",
+    classNames: ["modal-content"],
+    attributes: {
+      id: "modal-content",
+    },
+  });
+  view.append(modalContent);
+
+  const closeBtn = createElement({
+    tag: "span",
+    classNames: ["close"],
+    textContent: "×",
+  });
+  modalContent.append(closeBtn);
+
+  closeBtn.addEventListener("click", () => {
+    if (closeable) {
+      hideModal();
+    }
+  });
+
+  view.addEventListener(
+    "click",
+    (e) => {
+      if (view !== e.target || !closeable) return;
+      hideModal();
+    },
+    false
+  );
+
+  function setContent(content = []) {
+    modalContent.innerHTML = "";
+    modalContent.append(closeBtn);
+
+    modalContent.append(...content);
+  }
+
+  function showModal() {
+    view.classList.add("show");
+  }
+
+  function hideModal() {
+    view.classList.remove("show");
+  }
+
+  function getView() {
+    return view;
+  }
+
+  function setCloseable(bool) {
+    closeable = bool;
+  }
+
+  return { setContent, showModal, hideModal, getView, setCloseable };
+})();
+
 const PubSub = (() => {
   const events = [];
   return {
@@ -115,7 +180,7 @@ const Gameboard = (() => {
   };
 
   const isDraw = () => {
-    return "isDraw";
+    return !getWinner() && gameBoardArray.every((v) => v !== 0);
   };
 
   return {
@@ -139,20 +204,37 @@ const playerFactory = (id, name, number) => {
   };
 };
 
-const DisplayController = ((doc) => {
-  const gameboardContainer = doc.querySelector(".gameboard-container");
-  const tiles = [];
-  const restartBtn = doc.querySelector("#restart-game-btn");
+const DisplayController = (() => {
+  let doc;
+  let modal;
+  let gameboardContainer;
+  let tiles;
+  let restartBtn;
+  let newGameBtn;
+  let newGameForm;
 
-  const playerOneInfo = {
-    nameElm: doc.querySelector(".player-one-name"),
-    scoreElm: doc.querySelector(".player-one-score"),
-  };
+  let playerOneInfo;
 
-  const playerTwoInfo = {
-    nameElm: doc.querySelector(".player-two-name"),
-    scoreElm: doc.querySelector(".player-two-score"),
-  };
+  let playerTwoInfo;
+
+  function handleNewGameBtnClick() {
+    modal.showModal();
+  }
+
+  function handleNewGamFormSubmit(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const playerOneName = formData.get("p1_name");
+    const playerTwoName = formData.get("p2_name");
+
+    const playerOne = playerFactory(1, playerOneName, 1);
+    const playerTwo = playerFactory(2, playerTwoName, 2);
+
+    resetGameboard();
+    PubSub.publish("newGame", { playerOne, playerTwo });
+    modal.hideModal();
+  }
 
   const clearTiles = () => {
     tiles.forEach((t) => {
@@ -180,8 +262,6 @@ const DisplayController = ((doc) => {
     tile.textContent = payload.sign;
   };
 
-  PubSub.subscribe("tilePlayed", handleTilePlay);
-
   const disableTilesClickListener = () => {
     tiles.forEach((t) => {
       t.removeEventListener("click", handleTileClick);
@@ -198,10 +278,6 @@ const DisplayController = ((doc) => {
     PubSub.publish("restartGameRequest");
   };
 
-  restartBtn.addEventListener("click", handleRestartBtnClick);
-
-  const handleNewGameEvent = () => {};
-
   const handlePlayerWin = ({ indecies }) => {
     if (!indecies) return;
 
@@ -213,10 +289,14 @@ const DisplayController = ((doc) => {
     disableTilesClickListener();
   };
 
-  PubSub.subscribe("playerWon", handlePlayerWin);
-
   const renderGameboard = (gameboard = []) => {
+    // Clear state
+    disableTilesClickListener();
+    tiles.forEach((t) => t.remove());
+    tiles = [];
     gameboardContainer.innerHTML = "";
+
+    // Set State
     gameboard.forEach((item, index) => {
       const tile = createElement({
         classNames: ["tile"],
@@ -243,21 +323,56 @@ const DisplayController = ((doc) => {
     playerTwoInfo.scoreElm.textContent = p2Score;
   }
 
+  function displayForm() {
+    modal.showModal();
+    modal.setCloseable(false);
+  }
+
+  function init(document, _modal) {
+    doc = document;
+    modal = _modal;
+    gameboardContainer = doc.querySelector(".gameboard-container");
+    tiles = [];
+    restartBtn = doc.querySelector("#restart-game-btn");
+    newGameBtn = doc.querySelector("#new-game-btn");
+    newGameForm = doc.querySelector("#new_game_form");
+
+    playerOneInfo = {
+      nameElm: doc.querySelector(".player-one-name"),
+      scoreElm: doc.querySelector(".player-one-score"),
+    };
+
+    playerTwoInfo = {
+      nameElm: doc.querySelector(".player-two-name"),
+      scoreElm: doc.querySelector(".player-two-score"),
+    };
+
+    modal.setContent([newGameForm]);
+    doc.body.appendChild(modal.getView());
+
+    newGameBtn.addEventListener("click", handleNewGameBtnClick);
+    newGameForm.addEventListener("submit", handleNewGamFormSubmit);
+    PubSub.subscribe("tilePlayed", handleTilePlay);
+    restartBtn.addEventListener("click", handleRestartBtnClick);
+    PubSub.subscribe("playerWon", handlePlayerWin);
+  }
+
   return {
+    init,
     renderGameboard,
     resetGameboard,
     setPlayersScores,
     setPlayersNames,
+    displayForm,
   };
-})(document);
+})(document, modal);
 
-const GameCoordinator = ((Gameboard, DisplayController) => {
-  const playerOne = playerFactory(1, "Joe", 1);
-  const playerTwo = playerFactory(2, "Smith", 2);
+const GameCoordinator = (() => {
+  let Gameboard;
+  let DisplayController;
+  let playerOne = null;
+  let playerTwo = null;
   let currentPlayer = playerOne;
-
-  DisplayController.setPlayersNames(playerOne.name, playerTwo.name);
-  DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
 
   const handleTileClickEvent = (payload = {}) => {
     if (!payload.index) return;
@@ -282,16 +397,37 @@ const GameCoordinator = ((Gameboard, DisplayController) => {
     currentPlayer = currentPlayer === playerOne ? playerTwo : playerOne;
 
     // TODO
-    Gameboard.isDraw();
+    console.log(Gameboard.isDraw());
   };
-  PubSub.subscribe("tileClicked", handleTileClickEvent);
 
   const handleGameRestartRequest = () => {
     DisplayController.resetGameboard();
     Gameboard.resetGameBoardArray();
   };
 
-  PubSub.subscribe("restartGameRequest", handleGameRestartRequest);
-})(Gameboard, DisplayController);
+  const handleNewGame = (payload) => {
+    playerOne = payload.playerOne;
+    playerTwo = payload.playerTwo;
+    currentPlayer = playerOne;
+    Gameboard.resetGameBoardArray();
+    DisplayController.setPlayersNames(playerOne.name, playerTwo.name);
+    DisplayController.setPlayersScores(playerOne.score, playerTwo.score);
+    DisplayController.renderGameboard(Gameboard.getGameboardArray());
+  };
 
-DisplayController.renderGameboard(Gameboard.getGameboardArray());
+  function init(_Gameboard, _DisplayController) {
+    Gameboard = _Gameboard;
+    DisplayController = _DisplayController;
+    PubSub.subscribe("tileClicked", handleTileClickEvent);
+    PubSub.subscribe("newGame", handleNewGame);
+    PubSub.subscribe("restartGameRequest", handleGameRestartRequest);
+  }
+
+  return {
+    init,
+  };
+})();
+
+DisplayController.init(document, modal);
+GameCoordinator.init(Gameboard, DisplayController);
+DisplayController.displayForm();
