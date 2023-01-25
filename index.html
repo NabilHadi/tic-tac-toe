@@ -29,17 +29,19 @@
     </div>
 
   </div>
-  <button id="restart-game-btn">Restart</button>
-  <button id="new-game-btn">Start New Game</button>
+  <div class="controls">
+    <button id="restart-game-btn">Restart</button>
+    <button id="new-game-btn">Start New Game</button>
+  </div>
 
   <form action="" id="new_game_form">
     <div class="input-group">
-      <label for="p1_name">Player one name</label>
-      <input required type="text" name="p1_name" id="p1_name" value="Joe">
+      <label for="p1_name">Player One</label>
+      <input required placeholder="name" type="text" name="p1_name" id="p1_name" value="Joe">
     </div>
     <div class="input-group">
-      <label for="p2_name">Player one name</label>
-      <input required type="text" name="p2_name" id="p2_name" value="Doe">
+      <label for="p2_name">Player Two</label>
+      <input required placeholder="name" type="text" name="p2_name" id="p2_name" value="Doe">
     </div>
     <div class="form-btns">
       <input type="submit" value="Start">
