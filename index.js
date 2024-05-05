@@ -47,3 +47,52 @@ function Cell() {
     getValue
   };
 }
+
+const GameController = ((
+  playerOneName = "Player One",
+  playerTwoName = "Player Two",
+) => {
+
+  const players = [
+    {
+      name: playerOneName,
+      symbol: "X",
+    },
+    {
+      name: playerTwoName,
+      symbol: "O",
+    }
+  ];
+
+
+  let activePlayer = players[0];
+
+
+  const switchPlayerTurn = () => {
+    activePlayer = activePlayer === players[0] ? players[1] : players[0];
+  };
+
+  const getActivePlayer = () => activePlayer;
+
+  const printNewRound = () => {
+    Gameboard.printBoard();
+    console.log(`${getActivePlayer().name}'s turn.`);
+  };
+
+
+  const playRound = (rowIndex, columnIndex) => {
+    Gameboard.setCellValue({ rowIndex, columnIndex }, getActivePlayer().symbol);
+    console.log(`${getActivePlayer().name} played at (${rowIndex},${columnIndex})`);
+
+    switchPlayerTurn();
+    printNewRound();
+  };
+
+  printNewRound();
+
+
+  return {
+    playRound,
+    getActivePlayer
+  };
+})();
