@@ -1,27 +1,26 @@
 const Gameboard = (() => {
   const board = [];
-  let rows = 3;
-  let columns = 3;
+  let numSquares = 9;
 
-  for (let i = 0; i < rows; i++) {
-    board[i] = [];
-    for (let j = 0; j < columns; j++) {
-      board[i].push(Cell());
-    }
+  for (let i = 0; i < numSquares; i++) {
+    board.push(Cell());
   }
 
   const getBoard = () => board;
 
 
-  const setCellValue = ({ rowIndex, columnIndex }, symbol) => {
-    if (board[rowIndex][columnIndex] == undefined) return;
+  const setCellValue = (index, symbol) => {
+    if (board[index] == undefined) return;
 
-    board[rowIndex][columnIndex].setValue(symbol);
+    board[index].setValue(symbol);
   };
 
   const printBoard = () => {
-    const boardWithCellValues = board.map((row) => row.map((cell) => cell.getValue()));
-    console.log(boardWithCellValues);
+    const b = board.map(cell => cell.getValue());
+    console.log(`${b[0]}  ${b[1]}  ${b[2]}\n` +
+      `${b[3]}  ${b[4]}  ${b[5]}\n` +
+      `${b[6]}  ${b[7]}  ${b[8]}\n`
+    );
   };
 
   return {
@@ -80,9 +79,9 @@ const GameController = ((
   };
 
 
-  const playRound = (rowIndex, columnIndex) => {
-    Gameboard.setCellValue({ rowIndex, columnIndex }, getActivePlayer().symbol);
-    console.log(`${getActivePlayer().name} played at (${rowIndex},${columnIndex})`);
+  const playRound = (index) => {
+    Gameboard.setCellValue(index, getActivePlayer().symbol);
+    console.log(`${getActivePlayer().name} played at (${index})`);
 
     switchPlayerTurn();
     printNewRound();
