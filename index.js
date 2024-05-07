@@ -68,12 +68,12 @@ const GameController = ((
     {
       name: playerOneName,
       symbol: "X",
-      score: 2,
+      score: 0,
     },
     {
       name: playerTwoName,
       symbol: "O",
-      score: 2,
+      score: 0,
     }
   ];
 
@@ -163,7 +163,7 @@ const GameController = ((
     console.log(`New Round started!`);
   };
 
-  const startNewGame = (playerOneName, playerTwoName) => {
+  const startNewGame = (playerOneName = "Player One", playerTwoName = "Player Two") => {
     startNewRound();
     gameover = false;
     players[0].name = playerOneName;
