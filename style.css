@@ -4,6 +4,31 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   background-color: brown;
+  padding: 1rem;
+}
+
+#gameboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  height: 500px;
+  border: 1px solid black;
+}
+
+.square {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 10vh;
+  border: 1px solid black;
+}
+
+.square.win {
+  background-color: rgb(47, 255, 144);
 }

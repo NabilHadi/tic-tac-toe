@@ -68,12 +68,12 @@ const GameController = ((
     {
       name: playerOneName,
       symbol: "X",
-      score: 0,
+      score: 2,
     },
     {
       name: playerTwoName,
       symbol: "O",
-      score: 0,
+      score: 2,
     }
   ];
 
@@ -81,6 +81,7 @@ const GameController = ((
   let activePlayer = players[0];
   let remainingPlays = 9;
   let gameover = false;
+  let roundover = false;
 
 
   const switchPlayerTurn = () => {
@@ -96,7 +97,7 @@ const GameController = ((
 
 
   const playRound = (index) => {
-    if (gameover) return;
+    if (gameover || roundover) return;
     // Check if cell is playable
     if (!Gameboard.isCellEmpty(index)) return;
 
@@ -104,22 +105,23 @@ const GameController = ((
     console.log(`${getActivePlayer().name} played at (${index})`);
 
     remainingPlays--;
-    let winner = checkForWin();
-    if (winner.player) {
-      console.log(`winner: ${winner.player.name}`);
-      winner.player.score++;
-      if (winner.player.score >= 3) {
-        console.log(`Game over: ${winner.player.name} won the game!`);
+    let result = checkForWin();
+    if (result.player) {
+      console.log(`winner: ${result.player.name}`);
+      result.player.score++;
+      if (result.player.score >= 3) {
+        console.log(`Game over: ${result.player.name} won the game!`);
         gameover = true;
-      } else {
-        startNewRound();
       }
+      roundover = true;
     } else if (remainingPlays <= 0) {
       console.log(`Draw!!`);
-      startNewRound();
+      roundover = true;
+      result.draw = true;
     }
     switchPlayerTurn();
     printNewRound();
+    return result;
   };
 
   printNewRound();
@@ -143,7 +145,7 @@ const GameController = ((
 
     let player = null;
     if (indecies) {
-      player = indecies[0] === players[0].symbol ? players[0] : players[1];
+      player = board[indecies[0]] === players[0].symbol ? players[0] : players[1];
     }
 
 
@@ -155,14 +157,130 @@ const GameController = ((
   };
 
   const startNewRound = () => {
-    Gameboard.resetBoard();
     remainingPlays = 9;
+    roundover = false;
+    Gameboard.resetBoard();
     console.log(`New Round started!`);
+  };
+
+  const startNewGame = (playerOneName, playerTwoName) => {
+    startNewRound();
+    gameover = false;
+    players[0].name = playerOneName;
+    players[0].score = 0;
+    players[1].name = playerTwoName;
+    players[1].score = 0;
+    activePlayer = players[0];
+    console.log("New Game Started!");
   };
 
 
   return {
     playRound,
-    getActivePlayer
+    getActivePlayer,
+    getBoard: Gameboard.getBoard,
+    startNewRound,
+    startNewGame
   };
+})();
+
+
+const DisplayController = (function () {
+  const gameContainer = document.querySelector("#game_container");
+  const playerOneScoreDiv = gameContainer.querySelector("#player_one_score");
+  const playerTwoScoreDiv = gameContainer.querySelector("#player_two_score");
+  const newRoundBtn = gameContainer.querySelector("#new_round_btn");
+  const newGameBtn = gameContainer.querySelector("#new_game_btn");
+  const gameboardDiv = gameContainer.querySelector("#gameboard");
+  let roundover = false;
+  let gameover = false;
+  let playerOneScore = 0;
+  let playerTwoScore = 0;
+
+
+
+  // Bind event
+  function handleGameboardClick(e) {
+    if (roundover === true || gameover === true) return;
+    if (e.target.dataset.index == undefined) return;
+    const target = e.target;
+    const index = target.dataset.index;
+
+    let result = GameController.playRound(index);
+    updateScreen();
+    if (result.player) {
+      showWinner(result.player.name, result.indecies);
+      roundover = true;
+      if (result.player.symbol === "X") {
+        playerOneScore = result.player.score;
+      } else {
+        playerTwoScore = result.player.score;
+      }
+
+      if (result.player.score >= 3) {
+        gameover = true;
+      }
+    }
+    updateScore();
+  }
+  gameboardDiv.addEventListener("click", handleGameboardClick);
+
+  function startNewRound() {
+    if (gameover) {
+      startNewGame();
+      return;
+    }
+    roundover = false;
+    GameController.startNewRound();
+    updateScreen();
+  }
+  newRoundBtn.addEventListener("click", startNewRound);
+
+  function startNewGame() {
+    roundover = false;
+    gameover = false;
+    playerOneScore = 0;
+    playerTwoScore = 0;
+    GameController.startNewGame();
+    updateScreen();
+    updateScore();
+  }
+
+  newGameBtn.addEventListener("click", startNewGame);
+
+
+
+  const showWinner = (playerName, indecies = []) => {
+    indecies.forEach(index => {
+      let square = gameboardDiv.querySelector(`.square[data-index='${index}']`);
+      square.classList.add("win");
+    });
+  };
+
+  const updateScreen = () => {
+    updateScore();
+    const gameboard = GameController.getBoard();
+    gameboardDiv.innerHTML = "";
+    for (let i = 0; i < 9; i++) {
+      const square = document.createElement("div");
+      square.classList.add("square");
+      square.dataset.index = i;
+      square.textContent = gameboard[i]?.getValue() || "";
+      gameboardDiv.appendChild(square);
+    }
+  };
+
+  const updateScore = () => {
+    playerOneScoreDiv.textContent = playerOneScore;
+    playerTwoScoreDiv.textContent = playerTwoScore;
+  };
+
+
+  updateScreen();
+
+
+  return {
+    updateScreen,
+  };
+
 })();
