@@ -80,6 +80,7 @@ const GameController = ((
 
   let activePlayer = players[0];
   let remainingPlays = 9;
+  let gameover = false;
 
 
   const switchPlayerTurn = () => {
@@ -95,6 +96,7 @@ const GameController = ((
 
 
   const playRound = (index) => {
+    if (gameover) return;
     // Check if cell is playable
     if (!Gameboard.isCellEmpty(index)) return;
 
@@ -108,6 +110,7 @@ const GameController = ((
       winner.player.score++;
       if (winner.player.score >= 3) {
         console.log(`Game over: ${winner.player.name} won the game!`);
+        gameover = true;
       } else {
         startNewRound();
       }
