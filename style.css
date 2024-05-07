@@ -10,15 +10,64 @@ body {
 }
 
 body {
-  background-color: brown;
+  background-color: #111;
+  color: #ccc;
   padding: 1rem;
+}
+
+.btn {
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  border: none;
+  background-color: #ccc;
+  color: #111;
+  font-weight: bold;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn:active {
+  opacity: 1;
+}
+
+.alt_background {
+  background-color: #559bdc;
+  color: #111;
+}
+
+.sec_background {
+  background-color: #085c30;
+  color: #ccc;
+}
+
+#game_container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#game_container #scores {
+  display: flex;
+  gap: 2rem;
+}
+
+#game_container .buttons {
+  display: flex;
+  gap: 2rem;
+  padding: 0.5rem;
 }
 
 #gameboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 500px;
   height: 500px;
-  border: 1px solid black;
+  border: 1px solid #ccc;
 }
 
 .square {
@@ -26,9 +75,9 @@ body {
   justify-content: center;
   align-items: center;
   font-size: 10vh;
-  border: 1px solid black;
+  border: 1px solid #ccc;
 }
 
 .square.win {
-  background-color: rgb(47, 255, 144);
+  background-color: #085c30;
 }
