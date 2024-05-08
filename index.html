@@ -24,6 +24,23 @@
       <button class="btn sec_background" id="new_round_btn">New Round</button>
     </div>
     <div id="gameboard"></div>
+    <dialog id="form_dialog">
+      <form action="#" method="dialog" id="new_game_form">
+        <button id="form_dialog_close_btn">x</button>
+        <div class="input_group">
+          <label for="player_one_name_input">Player One Name: </label>
+          <input type="text" id="player_one_name_input">
+        </div>
+        <div class="input_group">
+          <label for="player_two_name_input">Player Two Name: </label>
+          <input type="text" id="player_two_name_input">
+        </div>
+        <div class="form_btns">
+          <button class="btn" type="submit">Start New Game</button>
+          <button class="btn" type="reset">Reset Fields</button>
+        </div>
+      </form>
+    </dialog>
   </div>
   <script src="./index.js"></script>
 </body>

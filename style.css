@@ -4,15 +4,47 @@
   box-sizing: border-box;
 }
 
+:root {
+  --primary-color: #111;
+  --secondary-color: #ccc;
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
-  background-color: #111;
-  color: #ccc;
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
   padding: 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+dialog {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: none;
+  background-color: transparent;
+}
+
+dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+button {
+  cursor: pointer;
+  outline: none;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+button:active {
+  opacity: 1;
+  cursor: default;
 }
 
 .btn {
@@ -20,8 +52,8 @@ body {
   cursor: pointer;
   border-radius: 0.5rem;
   border: none;
-  background-color: #ccc;
-  color: #111;
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
   font-weight: bold;
 }
 
@@ -35,12 +67,12 @@ body {
 
 .alt_background {
   background-color: #559bdc;
-  color: #111;
+  color: var(--primary-color);
 }
 
 .sec_background {
   background-color: #085c30;
-  color: #ccc;
+  color: var(--secondary-color);
 }
 
 #game_container {
@@ -67,7 +99,7 @@ body {
   grid-template-rows: repeat(3, 1fr);
   width: 500px;
   height: 500px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--secondary-color);
 }
 
 .square {
@@ -75,9 +107,48 @@ body {
   justify-content: center;
   align-items: center;
   font-size: 10vh;
-  border: 1px solid #ccc;
+  border: 1px solid var(--secondary-color);
 }
 
 .square.win {
   background-color: #085c30;
+}
+
+/* Form styles */
+#new_game_form {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+#form_dialog_close_btn {
+  margin-left: auto;
+  margin-bottom: 1rem;
+  height: 1.4rem;
+  width: 1.4rem;
+  border: none;
+  border-radius: 0.4rem;
+}
+
+#new_game_form .input_group {
+  margin-bottom: 1rem;
+}
+
+#new_game_form .input_group input {
+  outline: none;
+  height: 1.5rem;
+}
+
+#new_game_form .form_btns {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+#new_game_form .form_btns button {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
 }

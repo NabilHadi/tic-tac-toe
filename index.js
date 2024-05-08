@@ -192,10 +192,20 @@ const DisplayController = (function () {
   const newRoundBtn = gameContainer.querySelector("#new_round_btn");
   const newGameBtn = gameContainer.querySelector("#new_game_btn");
   const gameboardDiv = gameContainer.querySelector("#gameboard");
+  const dialog = gameContainer.querySelector("#form_dialog");
+  const form = gameContainer.querySelector("#new_game_form");
+  dialog.showModal();
   let roundover = false;
   let gameover = false;
   let playerOneScore = 0;
   let playerTwoScore = 0;
+
+  // TODO: Add new game form
+  /**
+   * 1- Add form dialog modal
+   * 2- when form is submitted set players names and start new game
+   * 3- when new Game button is clicked open form
+   */
 
 
 
