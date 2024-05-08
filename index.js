@@ -187,14 +187,16 @@ const GameController = ((
 
 const DisplayController = (function () {
   const gameContainer = document.querySelector("#game_container");
-  const playerOneScoreDiv = gameContainer.querySelector("#player_one_score");
-  const playerTwoScoreDiv = gameContainer.querySelector("#player_two_score");
+  const playerOneNameElm = gameContainer.querySelector("#player_one_name");
+  const playerOneScoreElm = gameContainer.querySelector("#player_one_score");
+  const playerTwoNameElm = gameContainer.querySelector("#player_two_name");
+  const playerTwoScoreElm = gameContainer.querySelector("#player_two_score");
   const newRoundBtn = gameContainer.querySelector("#new_round_btn");
   const newGameBtn = gameContainer.querySelector("#new_game_btn");
   const gameboardDiv = gameContainer.querySelector("#gameboard");
   const dialog = gameContainer.querySelector("#form_dialog");
   const form = gameContainer.querySelector("#new_game_form");
-  dialog.showModal();
+  const dialogCloseBtn = dialog.querySelector("#form_dialog_close_btn");
   let roundover = false;
   let gameover = false;
   let playerOneScore = 0;
@@ -237,7 +239,6 @@ const DisplayController = (function () {
 
   function startNewRound() {
     if (gameover) {
-      startNewGame();
       return;
     }
     roundover = false;
@@ -246,17 +247,30 @@ const DisplayController = (function () {
   }
   newRoundBtn.addEventListener("click", startNewRound);
 
-  function startNewGame() {
+  function startNewGame(playerOneName = "Player One", playerTwoName = "Player Two") {
     roundover = false;
     gameover = false;
     playerOneScore = 0;
     playerTwoScore = 0;
-    GameController.startNewGame();
+    GameController.startNewGame(playerOneName, playerTwoName);
     updateScreen();
     updateScore();
+    updatePlayerNames(playerOneName, playerTwoName);
   }
+  newGameBtn.addEventListener("click", () => {
+    dialog.showModal();
+  });
 
-  newGameBtn.addEventListener("click", startNewGame);
+  dialogCloseBtn.addEventListener("click", () => {
+    dialog.close();
+  });
+
+  form.addEventListener("submit", (e) => {
+    const playerOneName = form.querySelector("#player_one_name_input").value;
+    const playerTwoName = form.querySelector("#player_two_name_input").value;
+
+    startNewGame(playerOneName, playerTwoName);
+  });
 
 
 
@@ -281,8 +295,13 @@ const DisplayController = (function () {
   };
 
   const updateScore = () => {
-    playerOneScoreDiv.textContent = playerOneScore;
-    playerTwoScoreDiv.textContent = playerTwoScore;
+    playerOneScoreElm.textContent = playerOneScore;
+    playerTwoScoreElm.textContent = playerTwoScore;
+  };
+
+  const updatePlayerNames = (playerOneName, playerTwoName) => {
+    playerOneNameElm.textContent = playerOneName;
+    playerTwoNameElm.textContent = playerTwoName;
   };
 
 
