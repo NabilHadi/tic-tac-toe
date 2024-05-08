@@ -194,22 +194,17 @@ const DisplayController = (function () {
   const newRoundBtn = gameContainer.querySelector("#new_round_btn");
   const newGameBtn = gameContainer.querySelector("#new_game_btn");
   const gameboardDiv = gameContainer.querySelector("#gameboard");
-  const dialog = gameContainer.querySelector("#form_dialog");
+  const formDialog = gameContainer.querySelector("#form_dialog");
   const form = gameContainer.querySelector("#new_game_form");
-  const dialogCloseBtn = dialog.querySelector("#form_dialog_close_btn");
+  const formDialogCloseBtn = formDialog.querySelector(".dialog_close_btn");
+  const resultDialog = gameContainer.querySelector("#result_dialog");
+  const resultElm = resultDialog.querySelector("#result");
+  const resultDialogCloseBtn = resultDialog.querySelector(".dialog_close_btn");
+
   let roundover = false;
   let gameover = false;
   let playerOneScore = 0;
   let playerTwoScore = 0;
-
-  // TODO: Add new game form
-  /**
-   * 1- Add form dialog modal
-   * 2- when form is submitted set players names and start new game
-   * 3- when new Game button is clicked open form
-   */
-
-
 
   // Bind event
   function handleGameboardClick(e) {
@@ -231,6 +226,8 @@ const DisplayController = (function () {
 
       if (result.player.score >= 3) {
         gameover = true;
+        resultElm.textContent = `${result.player.name} Won!!`;
+        resultDialog.showModal();
       }
     }
     updateScore();
@@ -258,11 +255,15 @@ const DisplayController = (function () {
     updatePlayerNames(playerOneName, playerTwoName);
   }
   newGameBtn.addEventListener("click", () => {
-    dialog.showModal();
+    formDialog.showModal();
   });
 
-  dialogCloseBtn.addEventListener("click", () => {
-    dialog.close();
+  formDialogCloseBtn.addEventListener("click", () => {
+    formDialog.close();
+  });
+
+  resultDialogCloseBtn.addEventListener("click", () => {
+    resultDialog.close();
   });
 
   form.addEventListener("submit", (e) => {
@@ -306,6 +307,7 @@ const DisplayController = (function () {
 
 
   updateScreen();
+  formDialog.showModal();
 
 
   return {

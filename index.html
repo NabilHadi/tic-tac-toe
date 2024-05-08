@@ -26,7 +26,7 @@
     <div id="gameboard"></div>
     <dialog id="form_dialog">
       <form action="#" method="dialog" id="new_game_form">
-        <button type="button" id="form_dialog_close_btn">x</button>
+        <button type="button" class="dialog_close_btn">x</button>
         <div class="input_group">
           <label for="player_one_name_input">Player One Name: </label>
           <input type="text" id="player_one_name_input" value="Player One">
@@ -40,6 +40,13 @@
           <button class="btn" type="reset">Reset Fields</button>
         </div>
       </form>
+    </dialog>
+    <dialog id="result_dialog">
+      <div class="dialog_container">
+        <button type="button" class="dialog_close_btn">x</button>
+        <div id="result">
+        </div>
+      </div>
     </dialog>
   </div>
   <script src="./index.js"></script>

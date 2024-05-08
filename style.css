@@ -75,6 +75,14 @@ button:active {
   color: var(--secondary-color);
 }
 
+.dialog_close_btn {
+  margin-bottom: 1rem;
+  height: 1.4rem;
+  width: 1.4rem;
+  border: none;
+  border-radius: 0.4rem;
+}
+
 #game_container {
   display: flex;
   flex-direction: column;
@@ -124,13 +132,8 @@ button:active {
   flex-direction: column;
 }
 
-#form_dialog_close_btn {
+#new_game_form .dialog_close_btn {
   margin-left: auto;
-  margin-bottom: 1rem;
-  height: 1.4rem;
-  width: 1.4rem;
-  border: none;
-  border-radius: 0.4rem;
 }
 
 #new_game_form .input_group {
@@ -151,4 +154,30 @@ button:active {
 #new_game_form .form_btns button {
   background-color: var(--primary-color);
   color: var(--secondary-color);
+}
+
+/* Result elm */
+
+#result_dialog .dialog_container {
+  background-color: var(--secondary-color);
+  color: var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+#result_dialog .dialog_close_btn {
+  margin-left: auto;
+}
+
+#result {
+  min-height: 100px;
+  width: 300px;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #085c30;
 }
